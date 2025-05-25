@@ -109,7 +109,7 @@
 
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js';
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js';
+    import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js';
 
     const firebaseConfig = {
       apiKey: "AIzaSyClKhiiSVZ3sj_6dqzxZAT9owaFHfJHrnk",
@@ -131,13 +131,42 @@
       snapshot.forEach(docSnap => {
         const data = docSnap.data();
         const li = document.createElement("li");
-        li.textContent = `[${data.nummer}] ${data.label} → ${data.url}`;
+        const input = document.createElement("input");
+        input.value = `[${data.nummer}] ${data.label} → ${data.url}`;
+        input.disabled = true;
+
         const delBtn = document.createElement("button");
         delBtn.textContent = "🗑️";
         delBtn.onclick = () => deleteDoc(doc(db, "terminalLinks", docSnap.id)).then(renderLinks);
+
+        const editBtn = document.createElement("button");
+        editBtn.textContent = "✏️";
+        editBtn.onclick = async () => {
+          if (editBtn.textContent === "✏️") {
+            input.disabled = false;
+            input.focus();
+            editBtn.textContent = "💾";
+          } else {
+            const parts = input.value.split("→");
+            const labelPart = parts[0].split("] ")[1].trim();
+            const nummerPart = parts[0].split("]")[0].replace("[", "").trim();
+            const urlPart = parts[1].trim();
+            await updateDoc(doc(db, "terminalLinks", docSnap.id), {
+              nummer: nummerPart,
+              label: labelPart,
+              url: urlPart
+            });
+            input.disabled = true;
+            editBtn.textContent = "✏️";
+          }
+        };
+
         const actions = document.createElement("span");
         actions.className = "actions";
+        actions.appendChild(editBtn);
         actions.appendChild(delBtn);
+
+        li.appendChild(input);
         li.appendChild(actions);
         list.appendChild(li);
       });
