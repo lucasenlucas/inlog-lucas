@@ -36,6 +36,42 @@
     .tab-content.active {
       display: block;
     }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    input, button {
+      padding: 0.6rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 4px;
+    }
+    input {
+      width: calc(100% - 12px);
+      background: #333;
+      color: white;
+    }
+    button {
+      background: #50C878;
+      color: black;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      background: #2a2a2a;
+      margin-bottom: 0.5rem;
+      padding: 0.5rem;
+      border-radius: 5px;
+    }
+    .actions {
+      float: right;
+    }
+    .actions button {
+      margin-left: 0.5rem;
+    }
   </style>
 </head>
 <body>
@@ -47,7 +83,18 @@
 
   <div id="links" class="tab-content active">
     <h2>Beheer Terminal Links</h2>
-    <p>Hier komen je terminal links met bewerk- en verwijderopties.</p>
+    <div class="form-group">
+      <input type="text" id="linkNummer" placeholder="Nummer">
+    </div>
+    <div class="form-group">
+      <input type="text" id="linkLabel" placeholder="Naam">
+    </div>
+    <div class="form-group">
+      <input type="text" id="linkUrl" placeholder="URL">
+    </div>
+    <button onclick="addTerminalLink()">Toevoegen</button>
+    <h3>Gemaakte Links:</h3>
+    <ul id="terminalLinksList"></ul>
   </div>
 
   <div id="blogs" class="tab-content">
@@ -59,6 +106,57 @@
     <h2>Beheer Projecten</h2>
     <p>Projectinformatie aanpassen of publiceren.</p>
   </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js';
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyClKhiiSVZ3sj_6dqzxZAT9owaFHfJHrnk",
+      authDomain: "portfolio-lucas-8461a.firebaseapp.com",
+      projectId: "portfolio-lucas-8461a",
+      storageBucket: "portfolio-lucas-8461a.appspot.com",
+      messagingSenderId: "474096039312",
+      appId: "1:474096039312:web:5cee76f8389f9c02e1af15"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const linksRef = collection(db, "terminalLinks");
+    const list = document.getElementById("terminalLinksList");
+
+    async function renderLinks() {
+      list.innerHTML = "";
+      const snapshot = await getDocs(linksRef);
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        const li = document.createElement("li");
+        li.textContent = `[${data.nummer}] ${data.label} → ${data.url}`;
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "🗑️";
+        delBtn.onclick = () => deleteDoc(doc(db, "terminalLinks", docSnap.id)).then(renderLinks);
+        const actions = document.createElement("span");
+        actions.className = "actions";
+        actions.appendChild(delBtn);
+        li.appendChild(actions);
+        list.appendChild(li);
+      });
+    }
+
+    window.addTerminalLink = async function () {
+      const nummer = document.getElementById("linkNummer").value;
+      const label = document.getElementById("linkLabel").value;
+      const url = document.getElementById("linkUrl").value;
+      if (!nummer || !label || !url) return alert("Vul alle velden in.");
+      await addDoc(linksRef, { nummer, label, url, createdAt: new Date() });
+      document.getElementById("linkNummer").value = "";
+      document.getElementById("linkLabel").value = "";
+      document.getElementById("linkUrl").value = "";
+      renderLinks();
+    }
+
+    renderLinks();
+  </script>
 
   <script>
     const tabs = document.querySelectorAll('.tab');
