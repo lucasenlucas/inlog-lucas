@@ -106,6 +106,9 @@
       <input type="text" id="blogTitel" placeholder="Titel">
     </div>
     <div class="form-group">
+      <input type="text" id="blogThumbnail" placeholder="Thumbnail URL">
+    </div>
+    <div class="form-group">
       <textarea id="blogInhoud" placeholder="Inhoud"></textarea>
     </div>
     <button onclick="addBlogPost()">Toevoegen</button>
@@ -191,7 +194,7 @@
       snapshot.forEach(docSnap => {
         const data = docSnap.data();
         const li = document.createElement("li");
-        li.textContent = `${data.titel} - ${data.inhoud}`;
+        li.innerHTML = `<strong>${data.titel}</strong><br><img src="${data.thumbnail || ''}" alt="thumb" style="max-width: 100px; display:block; margin: 5px 0;"><span>${data.inhoud}</span>`;
         const delBtn = document.createElement("button");
         delBtn.textContent = "🗑️";
         delBtn.onclick = () => deleteDoc(doc(db, "blogs", docSnap.id)).then(renderBlogs);
@@ -215,10 +218,12 @@
     window.addBlogPost = async function () {
       const titel = document.getElementById("blogTitel").value;
       const inhoud = document.getElementById("blogInhoud").value;
+      const thumbnail = document.getElementById("blogThumbnail").value;
       if (!titel || !inhoud) return alert("Vul titel en inhoud in.");
-      await addDoc(blogRef, { titel, inhoud, createdAt: new Date() });
+      await addDoc(blogRef, { titel, inhoud, thumbnail, createdAt: new Date() });
       document.getElementById("blogTitel").value = "";
       document.getElementById("blogInhoud").value = "";
+      document.getElementById("blogThumbnail").value = "";
       renderBlogs();
     }
 
