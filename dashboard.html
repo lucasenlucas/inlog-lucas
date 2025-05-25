@@ -39,16 +39,19 @@
     .form-group {
       margin-bottom: 1rem;
     }
-    input, button {
+    input, textarea, button {
       padding: 0.6rem;
       font-size: 1rem;
       border: none;
       border-radius: 4px;
     }
-    input {
+    input, textarea {
       width: calc(100% - 12px);
       background: #333;
       color: white;
+    }
+    textarea {
+      height: 100px;
     }
     button {
       background: #50C878;
@@ -99,7 +102,15 @@
 
   <div id="blogs" class="tab-content">
     <h2>Beheer Blogs</h2>
-    <p>Hier kun je blogposts toevoegen, aanpassen of verwijderen.</p>
+    <div class="form-group">
+      <input type="text" id="blogTitel" placeholder="Titel">
+    </div>
+    <div class="form-group">
+      <textarea id="blogInhoud" placeholder="Inhoud"></textarea>
+    </div>
+    <button onclick="addBlogPost()">Toevoegen</button>
+    <h3>Gepubliceerde Blogs:</h3>
+    <ul id="blogList"></ul>
   </div>
 
   <div id="projects" class="tab-content">
@@ -123,7 +134,9 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const linksRef = collection(db, "terminalLinks");
+    const blogRef = collection(db, "blogs");
     const list = document.getElementById("terminalLinksList");
+    const blogList = document.getElementById("blogList");
 
     async function renderLinks() {
       list.innerHTML = "";
@@ -172,6 +185,21 @@
       });
     }
 
+    async function renderBlogs() {
+      blogList.innerHTML = "";
+      const snapshot = await getDocs(blogRef);
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        const li = document.createElement("li");
+        li.textContent = `${data.titel} - ${data.inhoud}`;
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "🗑️";
+        delBtn.onclick = () => deleteDoc(doc(db, "blogs", docSnap.id)).then(renderBlogs);
+        li.appendChild(delBtn);
+        blogList.appendChild(li);
+      });
+    }
+
     window.addTerminalLink = async function () {
       const nummer = document.getElementById("linkNummer").value;
       const label = document.getElementById("linkLabel").value;
@@ -184,7 +212,18 @@
       renderLinks();
     }
 
+    window.addBlogPost = async function () {
+      const titel = document.getElementById("blogTitel").value;
+      const inhoud = document.getElementById("blogInhoud").value;
+      if (!titel || !inhoud) return alert("Vul titel en inhoud in.");
+      await addDoc(blogRef, { titel, inhoud, createdAt: new Date() });
+      document.getElementById("blogTitel").value = "";
+      document.getElementById("blogInhoud").value = "";
+      renderBlogs();
+    }
+
     renderLinks();
+    renderBlogs();
   </script>
 
   <script>
