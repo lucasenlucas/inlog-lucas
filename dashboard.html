@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lucas Beheerportaal</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #0d0d0d;
+      color: #ffffff;
+      margin: 0;
+    }
+    .tabs {
+      display: flex;
+      background-color: #1a1a1a;
+      padding: 1rem;
+    }
+    .tab {
+      padding: 1rem 2rem;
+      margin-right: 1rem;
+      cursor: pointer;
+      background: #2a2a2a;
+      border-radius: 8px 8px 0 0;
+      color: white;
+    }
+    .tab.active {
+      background: #50C878;
+      color: #000;
+    }
+    .tab-content {
+      display: none;
+      padding: 2rem;
+      background: #1f1f1f;
+    }
+    .tab-content.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="tabs">
+    <div class="tab active" data-tab="links">Terminal Links</div>
+    <div class="tab" data-tab="blogs">Blogs</div>
+    <div class="tab" data-tab="projects">Projecten</div>
+  </div>
+
+  <div id="links" class="tab-content active">
+    <h2>Beheer Terminal Links</h2>
+    <p>Hier komen je terminal links met bewerk- en verwijderopties.</p>
+  </div>
+
+  <div id="blogs" class="tab-content">
+    <h2>Beheer Blogs</h2>
+    <p>Hier kun je blogposts toevoegen, aanpassen of verwijderen.</p>
+  </div>
+
+  <div id="projects" class="tab-content">
+    <h2>Beheer Projecten</h2>
+    <p>Projectinformatie aanpassen of publiceren.</p>
+  </div>
+
+  <script>
+    const tabs = document.querySelectorAll('.tab');
+    const contents = document.querySelectorAll('.tab-content');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        contents.forEach(c => c.classList.remove('active'));
+        document.getElementById(tab.dataset.tab).classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>
